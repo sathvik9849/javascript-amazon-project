@@ -4,6 +4,7 @@ import { formatCurrency } from "./utils/money.js";
 import { removeFromCart } from "../data/cart.js";
 import { deliveryOptions } from "../data/deliveryOptions.js";
 import dayjs from "https://unpkg.com/supersimpledev@8.5.0/dayjs/esm/index.js";
+import { updateDeliveryOption } from "../data/cart.js";
 
 let checkoutSummaryHTML = "";
 
@@ -86,7 +87,8 @@ function deliveryOption(matchedProduct, cartItem) {
       priceString = `$${formatCurrency(deliveryOption.priceCents)} -`;
     }
     html += `
-                <div class="delivery-option">
+                <div class="delivery-option js-delivery-option" data-product-id = ${matchedProduct.id} data-delivery-option-id = ${deliveryOption.id}>
+
                     <input type="radio"
                     ${
                       deliveryOption.id == cartItem.deliveryOptionId
@@ -120,3 +122,10 @@ document.querySelectorAll(".js-delete-link").forEach((link) => {
     container.remove();
   });
 });
+document.querySelectorAll('.js-delivery-option').forEach((element)=>{
+    element.addEventListener("click", ()=>{
+        const productId = element.dataset.productId;
+        const deliveryOptionId = element.dataset.deliveryOptionId
+        updateDeliveryOption(productId, deliveryOptionId)
+    })
+})
