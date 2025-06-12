@@ -2,13 +2,14 @@ import { cart, removeFromCart, updateDeliveryOption } from "../../data/cart.js";
 import { deliveryOptions } from "../../data/deliveryOptions.js";
 import { products } from "../../data/products.js";
 import { formatCurrency } from "../utils/money.js";
-import dayjs from 'https://unpkg.com/supersimpledev@8.5.0/dayjs/esm/index.js';
+import dayjs from "https://unpkg.com/supersimpledev@8.5.0/dayjs/esm/index.js";
 import { getProduct } from "../../data/products.js";
 import { getDeliveryOption } from "../../data/deliveryOptions.js";
 import { renderPaymentSummary } from "./paymentSummary.js";
 import { renderCheckoutHeader } from "./checkoutheader.js";
+import { updateProductQuantity } from "../../data/cart.js";
 
-export function renderOrderSummary(){
+export function renderOrderSummary() {
   let checkoutSummaryHTML = "";
 
   cart.forEach((cartItem) => {
@@ -41,13 +42,19 @@ export function renderOrderSummary(){
               </div>
               <div class="product-quantity">
                   <span>
-                  Quantity: <span class="quantity-label">${
+                  Quantity: <span class="quantity-label js-quantity-label-${matchedProduct.id}">${
                     cartItem.quantity
                   }</span>
                   </span>
-                  <span class="update-quantity-link link-primary">
+                  <span class="update-quantity-link link-primary js-update-link" data-product-id = ${
+                    matchedProduct.id
+                  }>
                   Update
                   </span>
+                  <input class = "quantity-input js-quantity-input-${matchedProduct.id}">
+                  <span class = "save-quantity-link link-primary js-save-link" data-product-id="${
+                    matchedProduct.id
+                  }">Save</span>
                   <span class="delete-quantity-link link-primary js-delete-link" data-product-id = ${
                     matchedProduct.id
                   }>
@@ -80,7 +87,9 @@ export function renderOrderSummary(){
         priceString = `$${formatCurrency(deliveryOption.priceCents)} -`;
       }
       html += `
-                  <div class="delivery-option js-delivery-option" data-product-id = ${matchedProduct.id} data-delivery-option-id = ${deliveryOption.id}>
+                  <div class="delivery-option js-delivery-option" data-product-id = ${
+                    matchedProduct.id
+                  } data-delivery-option-id = ${deliveryOption.id}>
 
                       <input type="radio"
                       ${
@@ -109,19 +118,43 @@ export function renderOrderSummary(){
     link.addEventListener("click", () => {
       const productId = link.dataset.productId;
       removeFromCart(productId);
+      renderCheckoutHeader();
       renderOrderSummary();
       renderPaymentSummary();
-      renderCheckoutHeader();
     });
   });
-  document.querySelectorAll('.js-delivery-option').forEach((element)=>{
-      element.addEventListener("click", ()=>{
-          const productId = element.dataset.productId;
-          const deliveryOptionId = element.dataset.deliveryOptionId
-          updateDeliveryOption(productId, deliveryOptionId)
-          renderOrderSummary()
-          renderPaymentSummary()
-      })
-  })
-}
+  document.querySelectorAll(".js-update-link").forEach((link) => {
+    link.addEventListener("click", () => {
+      const productId = link.dataset.productId;
+      const container = document.querySelector(
+        `.js-cart-item-container-${productId}`
+      );
+      container.classList.add("is-editing-quantity");
+    });
+  });
+  document.querySelectorAll(".js-save-link").forEach((link) => {
+    link.addEventListener("click", () => {
+      const productId = link.dataset.productId;
+      const container = document.querySelector(
+        `.js-cart-item-container-${productId}`
+      );
+      container.classList.remove("is-editing-quantity");
+      const quantityInput = document.querySelector(`.js-quantity-input-${productId}`)
+      const newQuantity = Number(quantityInput.value)
+      updateProductQuantity(newQuantity, productId)
+      document.querySelector(`.js-quantity-label-${productId}`).innerHTML = newQuantity
+      renderCheckoutHeader()
+      renderPaymentSummary()
+    });
+  });
+  document.querySelectorAll(".js-delivery-option").forEach((element) => {
+    element.addEventListener("click", () => {
+      const productId = element.dataset.productId;
+      const deliveryOptionId = element.dataset.deliveryOptionId;
+      updateDeliveryOption(productId, deliveryOptionId);
+      renderOrderSummary();
+      renderPaymentSummary();
+    });
+  });
 
+}
