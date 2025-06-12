@@ -1,4 +1,4 @@
-import { formatCurrency } from "../scripts/utils/money.js";
+import { formatCurrency } from "../../scripts/utils/money.js";
 describe("Test Suite: Format Currency", ()=>{
     it('Base Case', () =>{
         expect(formatCurrency(2095)).toEqual('20.95')
