@@ -9,7 +9,7 @@ export function getProduct(productId) {
   });
   return matchedProduct;
 }
-class Product {
+export class Product {
   id;
   image;
   name;
@@ -28,21 +28,37 @@ class Product {
   productPriceCents() {
     return `$${formatCurrency(this.priceCents)}`;
   }
-  extraInfoHtml(){
-    return ''
+  extraInfoHtml() {
+    return "";
   }
 }
 
-class Clothing extends Product {
+export class Clothing extends Product {
   sizeChartLink;
-  constructor(productDetails){
+  constructor(productDetails) {
     super(productDetails);
-    this.sizeChartLink = productDetails.sizeChartLink
+    this.sizeChartLink = productDetails.sizeChartLink;
+  }
+  extraInfoHtml() {
+    return `
+      <a href="${this.sizeChartLink}" target="_blank"> Size Chart</a>
+    `;
+  }
+}
+
+export class Appliances extends Product {
+  instructions;
+  warranty;
+  constructor(productDetails) {
+    super(productDetails);
+    this.instructions = productDetails.instructions;
+    this.warranty = productDetails.warranty;
   }
   extraInfoHtml(){
     return `
-      <a href="${this.sizeChartLink}" target="_blank"> Size Chart</a>
-    `
+      <a href="${this.instructions}" target="_blank"> Instructions</a>
+      <a href="${this.warranty}" target="_blank"> Warranty</a>
+    `;
   }
 }
 
@@ -92,6 +108,9 @@ export const products = [
     },
     priceCents: 1899,
     keywords: ["toaster", "kitchen", "appliances"],
+    type: "appliances",
+    instructions: "images/appliance-instructions.png",
+    warranty: "images/appliance-warranty.png",
   },
   {
     id: "3ebe75dc-64d2-4137-8860-1f5a963e534b",
@@ -518,9 +537,11 @@ export const products = [
     keywords: ["sweaters", "hoodies", "apparel", "mens"],
   },
 ].map((product) => {
-  if(product.type === 'clothing'){
-    return new Clothing(product)
-  }else {
+  if (product.type === "clothing") {
+    return new Clothing(product);
+  } else if (product.type === "appliances") {
+    return new Appliances(product);
+  } else {
     return new Product(product);
-  }  
+  }
 });
